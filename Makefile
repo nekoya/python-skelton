@@ -2,6 +2,8 @@ PYTHON = python3.6
 ACTIVATE = . ./venv/bin/activate;
 MODULE_NAME = foo
 
+TEST_DOCKER_IMAGE = pybase_test
+
 .PHONY: help
 .DEFAULT_GOAL: help
 
@@ -11,9 +13,11 @@ help:
 
 clean: clean_venv ## Cleaning up your environment
 
-setup: venv install install_dev ## Setup your environment
+setup: build_test_image ## Setup test environment
 
-test: test_python ## Testing
+development: venv install install_dev ## Setup for local development
+
+test: lint_python test_python
 
 # Python
 clean_venv:
@@ -32,8 +36,11 @@ install_dev: venv
 freeze: venv  ## Freeze pip modules into constraints.txt
 	$(ACTIVATE) pip freeze > constraints.txt
 
-lint:
-	$(ACTIVATE) flake8 $(MODULE_NAME)
+build_test_image:
+	docker build -t $(TEST_DOCKER_IMAGE) .
 
-test_python: lint
-	$(ACTIVATE) py.test $(MODULE_NAME)
+lint_python: build_test_image
+	docker run -it $(TEST_DOCKER_IMAGE) sh -c 'flake8 foo'
+
+test_python: build_test_image
+	docker run -it $(TEST_DOCKER_IMAGE) sh -c 'py.test -sv foo'
