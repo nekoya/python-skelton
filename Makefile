@@ -40,7 +40,7 @@ build_test_image:
 	docker build -t $(TEST_DOCKER_IMAGE) .
 
 lint_python: build_test_image
-	docker run -it $(TEST_DOCKER_IMAGE) sh -c 'flake8 foo'
+	docker run $(TEST_DOCKER_IMAGE) sh -c 'flake8 foo'
 
 test_python: build_test_image
-	docker run -it $(TEST_DOCKER_IMAGE) sh -c 'py.test -sv foo'
+	docker run $(TEST_DOCKER_IMAGE) sh -c 'py.test -sv foo'

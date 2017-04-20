@@ -1,0 +1,17 @@
+sudo: required
+
+services:
+  - docker
+
+language: python
+
+env:
+  global:
+    - PATH=$HOME/.local/bin:$PATH
+    - numcpus="$(( $(grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 1) * 2 ))"
+
+install:
+  - make setup -j $numcpus -l $numcpus
+
+script:
+  - make test -j $numcpus -l $numcpus
