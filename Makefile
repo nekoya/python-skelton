@@ -2,7 +2,10 @@ PYTHON = python3.6
 ACTIVATE = . ./venv/bin/activate;
 MODULE_NAME = foo
 
-TEST_DOCKER_IMAGE = pybase_test
+DEV_CONTAINER_IMAGE = pydev
+DEV_CONTAINER_NAME = dev_container
+MYSQL_CONTAINER_NAME = mysqld
+REDIS_CONTAINER_NAME = redis
 
 .PHONY: help
 .DEFAULT_GOAL: help
@@ -11,21 +14,18 @@ help:
 	@echo "These are public command list (\`・ω・´)"
 	@grep -E '^[a-zA-Z_%-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: clean_venv ## Cleaning up your environment
+clean: clean_venv remove_compose ## Cleaning up your environment
 
-setup: build_test_image ## Setup test environment
+setup: install install_dev ## Setup environment
 
-development: venv install install_dev ## Setup for local development
+test: lint test_docker ## Testing
 
-test: lint_python test_python
-
-# Python
+# local venv (mainly for IDE)
 clean_venv:
 	rm -rf venv
 
 venv:
 	$(PYTHON) -m venv venv
-	echo '../../../../lib' > ./venv/lib/python3.6/site-packages/lib.pth
 
 install: venv
 	$(ACTIVATE) pip install -r requirements.txt -c constraints.txt
@@ -36,11 +36,20 @@ install_dev: venv
 freeze: venv  ## Freeze pip modules into constraints.txt
 	$(ACTIVATE) pip freeze > constraints.txt
 
-build_test_image:
-	docker build -t $(TEST_DOCKER_IMAGE) .
+lint: venv
+	$(ACTIVATE) flake8 foo
 
-lint_python: build_test_image
-	docker run $(TEST_DOCKER_IMAGE) sh -c 'flake8 foo'
+# dev container
+build_devcontainer:
+	docker build -t $(DEV_CONTAINER_IMAGE) .
 
-test_python: build_test_image
-	docker run $(TEST_DOCKER_IMAGE) sh -c 'py.test -sv foo'
+run_devcontainer: build_devcontainer ## Booting up dev container
+	docker run --link $(MYSQL_CONTAINER_NAME) --link $(REDIS_CONTAINER_NAME) \
+	--name  $(DEV_CONTAINER_NAME) -it --rm $(DEV_CONTAINER_IMAGE) ptpython
+
+# docker compose
+test_docker:
+	docker-compose up --build --abort-on-container-exit
+
+remove_compose:
+	docker-compose rm -f

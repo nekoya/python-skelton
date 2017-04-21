@@ -6,7 +6,7 @@ COPY requirements-dev.txt .
 COPY constraints.txt .
 RUN \
  apk add --no-cache --virtual .dev-deps gcc musl-dev && \
-#  apk add --no-cache --virtual .mysql-deps mariadb-dev && \
+ apk add --no-cache --virtual .mysql-deps mariadb-dev && \
  pip install -r requirements.txt -c constraints.txt && \
  pip install -r requirements-dev.txt -c constraints.txt && \
  apk del --purge .dev-deps
