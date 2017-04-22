@@ -14,8 +14,8 @@ help:
 
 run: # Start up MySQL container independently
 	docker run --name $(MYSQL_CONTAINER_NAME) \
-	-v $(CURDIR)/mysql/conf.d:/etc/mysql/conf.d \
-	-v $(CURDIR)/mysql/sql:/docker-entrypoint-initdb.d \
+	-v $(CURDIR)/conf.d:/etc/mysql/conf.d \
+	-v $(CURDIR)/sql:/docker-entrypoint-initdb.d \
 	-e MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
 	-e MYSQL_USER=$(MYSQL_USER) \
 	-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
