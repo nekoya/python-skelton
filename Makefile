@@ -38,7 +38,7 @@ freeze: venv  ## Freeze pip modules into constraints.txt
 
 lint: venv
 	$(ACTIVATE) flake8 foo
-	$(ACTIVATE) mypy --ignore-missing-import --strict foo
+	$(ACTIVATE) mypy foo
 
 # dev container
 build_devcontainer:
